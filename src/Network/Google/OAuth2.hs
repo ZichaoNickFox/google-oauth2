@@ -10,6 +10,7 @@ module Network.Google.OAuth2
 import Control.Exception.Safe (handleIO, throwString)
 import Control.Monad ((<=<))
 import Control.Monad.Trans.Maybe
+import Control.Monad.Except
 import qualified Data.ByteString.Char8 as C8
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -43,29 +44,29 @@ getAccessToken clientId clientSecret scopes mPath = do
             , ""
             , "Verification code: "
             ]
-
+        
         fetchAccessToken' mgr $ ExchangeToken $ T.pack code
     maybe (pure token) (refreshAccessToken' mgr) $ refreshToken token
   where
     oauth2 = OAuth2
-        { oauthClientId = clientId
-        , oauthClientSecret = Just clientSecret
-        , oauthOAuthorizeEndpoint =
+        { oauth2ClientId = clientId
+        , oauth2ClientSecret = clientSecret
+        , oauth2AuthorizeEndpoint =
             appendQueryParams
                 [ ("redirect_uri", "urn:ietf:wg:oauth:2.0:oob")
                 , ("scope", C8.intercalate " " $ map encodeUtf8 scopes)
                 ]
                 [uri|https://accounts.google.com/o/oauth2/auth|]
-        , oauthAccessTokenEndpoint =
+        , oauth2TokenEndpoint =
             appendQueryParams
                 [ ("redirect_uri", "urn:ietf:wg:oauth:2.0:oob")
                 ]
                 [uri|https://www.googleapis.com/oauth2/v3/token|]
-        , oauthCallback = Nothing
+        , oauth2RedirectUri = [uri|http://127.0.0.1|]
         }
 
-    fetchAccessToken' m = fromEither <=< fetchAccessToken m oauth2
-    refreshAccessToken' m = fromEither <=< refreshAccessToken m oauth2
+    fetchAccessToken' m token = runExceptT (fetchAccessToken m oauth2 token) >>= fromEither
+    refreshAccessToken' m token = runExceptT (refreshAccessToken m oauth2 token) >>= fromEither
 
     fromEither = either (throwString . show) pure
 

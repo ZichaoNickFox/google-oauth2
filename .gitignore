@@ -1,4 +1,3 @@
-*.cabal
 .env
 .stack-work
 test/oauth.token

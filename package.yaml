@@ -1,6 +1,6 @@
 ---
 name: google-oauth2
-version: 0.3.0.0
+version: 0.4.0.0
 synopsis: Google OAuth2 token negotiation
 description: See https://github.com/pbrisbin/google-oauth2#readme
 author: Pat Brisbin <pbrisbin@gmail.com>
@@ -13,6 +13,7 @@ dependencies:
   - bytestring
   - hoauth2
   - text
+  - mtl
 
 ghc-options: -Wall
 
